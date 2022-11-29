@@ -1,6 +1,10 @@
-denary = int(input("Input a value: "))
-binary = str(bin(denary))[2:]
-print(binary)
+def main():
+    denary = get_int("Input a value: ")
+    binary = str(bin(denary))[2:]
+    print(binary)
+    print(hex_converter(denary))
+    
+    
 def number_to_letter(n):
     if n > 9:
         if n == 10:
@@ -15,10 +19,24 @@ def number_to_letter(n):
             return "E"    
         if n == 15:
             return "F"  
-    return str(n)        
+    return str(n)    
+    
+    
 def hex_converter(h):
     column1= number_to_letter(h // 16)
     column2 = number_to_letter(h % 16)
     return [column1,column2]
-hexadecimal=hex_converter(denary))    
+    
+def get_int(message=""):
+    while True:
+        try:
+            n = int(input(message))
+            return n
+        except ValueError:
+            print("Invalid input try again")
+main()    
+
+
+   
+     
     
