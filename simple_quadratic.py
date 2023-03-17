@@ -1,7 +1,5 @@
 import math
-# formula = input("Enter the quadratic: ")
 
-# a,b,c = formula.split("+")
 a = float(input("Enter integer a: "))
 b = float(input("Enter integer b: "))
 c = float(input("Enter integer c: "))
