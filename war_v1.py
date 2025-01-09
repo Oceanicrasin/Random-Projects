@@ -34,7 +34,7 @@ def main():
             elif result[0] == 3:
                 hands[0].append(card1)
                 hands[0].append(card2)
-                for i in range(result[1]):
+                for i in range(result[1]*2):
                     hands[0].append(hands[0][0])
                     hands[0].append(hands[1][0])
                     hands[0].pop(0)
