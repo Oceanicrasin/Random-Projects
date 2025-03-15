@@ -1,6 +1,6 @@
 import sympy as sym
 
-def find_intersection(a1, b1, a2, b2):
+def find_intersection_LL(a1, b1, a2, b2):
     """
     Determines whether two parametric lines in 3D intersect, are skew, or are parallel.
     Parameters:
@@ -82,7 +82,7 @@ def find_intersection(a1, b1, a2, b2):
 
 from sympy import symbols, Eq, solve
 
-def find_intersection(plane_normal, plane_constant, line_point, line_direction):
+def find_intersection_PL(plane_normal, plane_constant, line_point, line_direction):
     """
     Find the intersection between a line and a plane using vector equations.
 
@@ -190,11 +190,104 @@ line_point = [1, 1, 1]     # A point on the line
 line_direction = [1, 1, 1] # Direction vector of the line
 
 
+def find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_constant):
+    """
+    Find the intersection of two planes by finding two common points.
+
+    Parameters:
+    - plane1_normal: Normal vector of the first plane [a1, b1, c1].
+    - plane1_constant: The constant d1 in the plane equation a1x + b1y + c1z = d1.
+    - plane2_normal: Normal vector of the second plane [a2, b2, c2].
+    - plane2_constant: The constant d2 in the plane equation a2x + b2y + c2z = d2.
+
+    Returns:
+    - A string indicating the intersection line, no intersection, or if the planes are the same.
+    """
+    # Step 1: Unpack inputs
+    a1, b1, c1 = plane1_normal
+    d1 = plane1_constant
+    a2, b2, c2 = plane2_normal
+    d2 = plane2_constant
+
+    print(f"Step 1: Inputs")
+    print(f"Plane 1: {a1}x + {b1}y + {c1}z = {d1}")
+    print(f"Plane 2: {a2}x + {b2}y + {c2}z = {d2}")
+    print()
+
+    # Step 2: Define symbols
+    x, y, z = symbols('x y z')
+
+    # Step 3: Solve the system of equations to find two points
+    equations = [
+        a1 * x + b1 * y + c1 * z - d1,
+        a2 * x + b2 * y + c2 * z - d2
+    ]
+
+    print(f"Step 2: Solve the system of equations to find two points")
+    print(f"Equation 1: {a1}x + {b1}y + {c1}z = {d1}")
+    print(f"Equation 2: {a2}x + {b2}y + {c2}z = {d2}")
+    print()
+
+    # Step 2.1: Fix z = 0 and solve for x and y
+    print(f"Step 2.1: Fix z = 0 and solve for x and y")
+    try:
+        solution1 = solve([eq.subs(z, 0) for eq in equations], (x, y), dict=True)
+        if not solution1:
+            print("No solution found for z = 0. Trying another value.")
+            # Step 2.2: Fix y = 0 and solve for x and z
+            print(f"Step 2.2: Fix y = 0 and solve for x and z")
+            solution1 = solve([eq.subs(y, 0) for eq in equations], (x, z), dict=True)
+            if not solution1:
+                print("No solution found. The planes do not intersect.")
+                return "The planes do not intersect."
+        point1 = {k: v for k, v in solution1[0].items()}
+        if z in point1:
+            point1[z] = 0  # Ensure z = 0 for the first point
+        else:
+            point1[z] = 0  # Add z = 0 to the point
+        x1, y1, z1 = point1[x], point1[y], point1[z]
+        print(f"Point 1: ({x1}, {y1}, {z1})")
+    except Exception as e:
+        print(f"Error solving for Point 1: {e}")
+        return "The planes do not intersect or are parallel."
+
+    # Step 2.3: Fix z = 1 and solve for x and y
+    print(f"Step 2.3: Fix z = 1 and solve for x and y")
+    try:
+        solution2 = solve([eq.subs(z, 1) for eq in equations], (x, y), dict=True)
+        if not solution2:
+            print("No solution found for z = 1. Trying another value.")
+            # Step 2.4: Fix y = 1 and solve for x and z
+            print(f"Step 2.4: Fix y = 1 and solve for x and z")
+            solution2 = solve([eq.subs(y, 1) for eq in equations], (x, z), dict=True)
+            if not solution2:
+                print("No solution found. The planes do not intersect.")
+                return "The planes do not intersect."
+        point2 = {k: v for k, v in solution2[0].items()}
+        if z in point2:
+            point2[z] = 1  # Ensure z = 1 for the second point
+        else:
+            point2[z] = 1  # Add z = 1 to the point
+        x2, y2, z2 = point2[x], point2[y], point2[z]
+        print(f"Point 2: ({x2}, {y2}, {z2})")
+    except Exception as e:
+        print(f"Error solving for Point 2: {e}")
+        return "The planes do not intersect or are parallel."
+
+    # Step 3: Parametric equation of the intersection line
+    direction_vector = (x2 - x1, y2 - y1, z2 - z1)
+
+    print(f"Step 3: Parametric equation of the intersection line")
+    print(f"r = ({x1}, {y1}, {z1}) + λ({direction_vector[0]}, {direction_vector[1]}, {direction_vector[2]})")
+    print()
+
+    return f"The intersection line is r = ({x1}, {y1}, {z1}) + λ({direction_vector[0]}, {direction_vector[1]}, {direction_vector[2]})"
 
 
 # User input handling
 print("Enter 1 to find the intersection of two lines: ")
 print("Enter 2 to find the intersection of a line and a plane: ")
+print("Enter 3 to find the intersection of two planes: ")
 choice = int(input())
 
 if choice == 1:
@@ -203,11 +296,18 @@ if choice == 1:
     l2a = list(map(int, input("Enter the position vector of line 2 (space-separated): ").split()))
     l2b = list(map(int, input("Enter the direction vector of line 2 (space-separated): ").split()))
 
-    find_intersection(l1a, l1b, l2a, l2b)
+    find_intersection_LL(l1a, l1b, l2a, l2b)
 if choice == 2:
     line_point = list(map(int, input("Enter the position vector of the line (space-separated): ").split()))
     line_direction = list(map(int, input("Enter the direction vector of the line (space-separated): ").split()))
     plane_normal = list(map(int, input("Enter the plane coefficients (space-separated, as ax + by + cz = d): ").split()))
     plane_constant = int(input("Enter the constant term of the plane equation (d): "))
 
-    print(find_intersection(plane_normal, plane_constant, line_point, line_direction))
+    print(find_intersection_PL(plane_normal, plane_constant, line_point, line_direction))
+if choice == 3:
+    plane1_normal = list(map(int, input("Enter the first plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the first plane
+    plane1_constant = int(input("Enter the constant term of the first plane equation (d): "))        # d1 in the plane equation a1x + b1y + c1z = d1
+    plane2_normal = list(map(int, input("Enter the second plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the second plane
+    plane2_constant = int(input("Enter the constant term of the second plane equation (d): "))       # d2 in the plane equation a2x + b2y + c2z = d2
+
+    print(find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_constant))
