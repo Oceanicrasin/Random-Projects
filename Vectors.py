@@ -283,11 +283,145 @@ def find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_c
 
     return f"The intersection line is r = ({x1}, {y1}, {z1}) + λ({direction_vector[0]}, {direction_vector[1]}, {direction_vector[2]})"
 
+from sympy import symbols, Matrix, solve, sqrt
+
+def shortest_distance_between_lines(line1_point, line1_direction, line2_point, line2_direction):
+    """
+    Find the shortest distance between two lines using the specified method.
+
+    Parameters:
+    - line1_point: A point on the first line [x1, y1, z1].
+    - line1_direction: Direction vector of the first line [u1, v1, w1].
+    - line2_point: A point on the second line [x2, y2, z2].
+    - line2_direction: Direction vector of the second line [u2, v2, w2].
+
+    Returns:
+    - The shortest distance between the two lines.
+    """
+    # Step 1: Unpack inputs
+    a1 = Matrix(line1_point)
+    d1 = Matrix(line1_direction)
+    a2 = Matrix(line2_point)
+    d2 = Matrix(line2_direction)
+
+    print(f"Step 1: Inputs")
+    print(f"Line 1: r1 = ({a1[0]}, {a1[1]}, {a1[2]}) + λ({d1[0]}, {d1[1]}, {d1[2]})")
+    print(f"Line 2: r2 = ({a2[0]}, {a2[1]}, {a2[2]}) + μ({d2[0]}, {d2[1]}, {d2[2]})")
+    print()
+
+    # Step 2: Check if the lines are parallel
+    cross_d1_d2 = d1.cross(d2)
+    if cross_d1_d2 == Matrix([0, 0, 0]):
+        print("Step 2: The lines are parallel.")
+        # Step 3: For parallel lines, use the method involving t = λ - μ
+        t = symbols('t')
+        a2_minus_a1 = a2 - a1
+        print(f"Step 2.1: Subtract r2 - r1:")
+        print(f"r2 - r1 = ({a2[0]} + μ{d2[0]}) - ({a1[0]} + λ{d1[0]}), ({a2[1]} + μ{d2[1]}) - ({a1[1]} + λ{d1[1]}), ({a2[2]} + μ{d2[2]}) - ({a1[2]} + λ{d1[2]}))")
+        print(f"Simplify: ({a2_minus_a1[0]} + μ{d2[0]} - λ{d1[0]}, {a2_minus_a1[1]} + μ{d2[1]} - λ{d1[1]}, {a2_minus_a1[2]} + μ{d2[2]} - λ{d1[2]})")
+        print()
+        print("Explanation: Subtracting r2 - r1 gives the vector connecting a point on Line 2 to a point on Line 1.")
+        print("This vector represents the displacement between the two lines at specific values of λ and μ.")
+        print()
+
+        # Since d1 and d2 are parallel, d2 = k d1 (for some scalar k)
+        # Here, d2 = d1, so μ d2 - λ d1 = (μ - λ) d1
+        # Let t = μ - λ
+        eq = (a2_minus_a1 + t * d1).dot(d1)
+        print(f"Step 2.2: Set (r2 - r1) · d1 = 0:")
+        print(f"({a2_minus_a1[0]} + t{d1[0]}){d1[0]} + ({a2_minus_a1[1]} + t{d1[1]}){d1[1]} + ({a2_minus_a1[2]} + t{d1[2]}){d1[2]} = 0")
+        print(f"Simplify: {eq} = 0")
+        print()
+        print("Explanation: To minimize the distance, the connecting vector (r2 - r1) must be perpendicular to the direction vector d1.")
+        print("This ensures that the distance is the shortest possible.")
+        print()
+
+        t_value = solve(eq, t)[0]
+        print(f"Step 2.3: Solve for t: t = {t_value}")
+        print()
+        print("Explanation: Solving the equation (r2 - r1) · d1 = 0 gives the value of t that minimizes the distance.")
+        print()
+
+        # Substitute t back into r2 - r1
+        connecting_vector = a2_minus_a1 + t_value * d1
+        print(f"Step 2.4: Substitute t back into r2 - r1:")
+        print(f"r2 - r1 = ({a2_minus_a1[0]} + {t_value}{d1[0]}, {a2_minus_a1[1]} + {t_value}{d1[1]}, {a2_minus_a1[2]} + {t_value}{d1[2]}) = ({connecting_vector[0]}, {connecting_vector[1]}, {connecting_vector[2]})")
+        print()
+        print("Explanation: Substituting t back into r2 - r1 gives the connecting vector at the point of minimum distance.")
+        print()
+
+        distance = connecting_vector.norm()
+        print(f"Step 2.5: Compute the norm of r2 - r1:")
+        print(f"Distance = sqrt(({connecting_vector[0]})^2 + ({connecting_vector[1]})^2 + ({connecting_vector[2]})^2) = {distance}")
+        print()
+        print("Explanation: The norm of the connecting vector gives the shortest distance between the two lines.")
+        print()
+
+        print(f"Shortest distance between parallel lines: {distance}")
+        return distance
+    else:
+        print("Step 2: The lines are skew.")
+        # Step 3: For skew lines, solve for λ and μ
+        λ, μ = symbols('λ μ')
+        # Subtract r2 - r1
+        r2_minus_r1 = (a2 + μ * d2) - (a1 + λ * d1)
+        print(f"Step 2.1: Subtract r2 - r1:")
+        print(f"r2 - r1 = ({a2[0]} + μ{d2[0]}) - ({a1[0]} + λ{d1[0]}), ({a2[1]} + μ{d2[1]}) - ({a1[1]} + λ{d1[1]}), ({a2[2]} + μ{d2[2]}) - ({a1[2]} + λ{d1[2]}))")
+        print(f"Simplify: ({r2_minus_r1[0]}, {r2_minus_r1[1]}, {r2_minus_r1[2]})")
+        print()
+        print("Explanation: Subtracting r2 - r1 gives the vector connecting a point on Line 2 to a point on Line 1.")
+        print("This vector represents the displacement between the two lines at specific values of λ and μ.")
+        print()
+
+        # Dot product with d1 and d2 to form two equations
+        eq1 = r2_minus_r1.dot(d1)
+        eq2 = r2_minus_r1.dot(d2)
+        print(f"Step 2.2: Set (r2 - r1) · d1 = 0 and (r2 - r1) · d2 = 0:")
+        print(f"(r2 - r1) · d1 = ({r2_minus_r1[0]}){d1[0]} + ({r2_minus_r1[1]}){d1[1]} + ({r2_minus_r1[2]}){d1[2]} = 0")
+        print(f"Simplify: {eq1} = 0")
+        print(f"(r2 - r1) · d2 = ({r2_minus_r1[0]}){d2[0]} + ({r2_minus_r1[1]}){d2[1]} + ({r2_minus_r1[2]}){d2[2]} = 0")
+        print(f"Simplify: {eq2} = 0")
+        print()
+        print("Explanation: To minimize the distance, the connecting vector (r2 - r1) must be perpendicular to both direction vectors d1 and d2.")
+        print("This ensures that the distance is the shortest possible.")
+        print()
+
+        # Solve the system of equations for λ and μ
+        solution = solve((eq1, eq2), (λ, μ), dict=True)
+        if not solution:
+            print("No solution found. The lines do not intersect.")
+            return "The lines do not intersect."
+        λ_value = solution[0][λ]
+        μ_value = solution[0][μ]
+        print(f"Step 2.3: Solve for λ and μ: λ = {λ_value}, μ = {μ_value}")
+        print()
+        print("Explanation: Solving the system of equations gives the values of λ and μ that minimize the distance.")
+        print()
+
+        # Substitute λ and μ back into r2 - r1
+        connecting_vector = r2_minus_r1.subs({λ: λ_value, μ: μ_value})
+        print(f"Step 2.4: Substitute λ and μ back into r2 - r1:")
+        print(f"r2 - r1 = ({connecting_vector[0]}, {connecting_vector[1]}, {connecting_vector[2]})")
+        print()
+        print("Explanation: Substituting λ and μ back into r2 - r1 gives the connecting vector at the point of minimum distance.")
+        print()
+
+        distance = connecting_vector.norm()
+        print(f"Step 2.5: Compute the norm of r2 - r1:")
+        print(f"Distance = sqrt(({connecting_vector[0]})^2 + ({connecting_vector[1]})^2 + ({connecting_vector[2]})^2) = {distance}")
+        print()
+        print("Explanation: The norm of the connecting vector gives the shortest distance between the two lines.")
+        print()
+
+        print(f"Shortest distance between skew lines: {distance}")
+        return distance
+
 
 # User input handling
 print("Enter 1 to find the intersection of two lines: ")
 print("Enter 2 to find the intersection of a line and a plane: ")
 print("Enter 3 to find the intersection of two planes: ")
+print("Enter 4 to find the shortest distance between two lines: ")
 choice = int(input())
 
 if choice == 1:
@@ -297,17 +431,24 @@ if choice == 1:
     l2b = list(map(int, input("Enter the direction vector of line 2 (space-separated): ").split()))
 
     find_intersection_LL(l1a, l1b, l2a, l2b)
-if choice == 2:
+elif choice == 2:
     line_point = list(map(int, input("Enter the position vector of the line (space-separated): ").split()))
     line_direction = list(map(int, input("Enter the direction vector of the line (space-separated): ").split()))
     plane_normal = list(map(int, input("Enter the plane coefficients (space-separated, as ax + by + cz = d): ").split()))
     plane_constant = int(input("Enter the constant term of the plane equation (d): "))
 
     print(find_intersection_PL(plane_normal, plane_constant, line_point, line_direction))
-if choice == 3:
+elif choice == 3:
     plane1_normal = list(map(int, input("Enter the first plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the first plane
     plane1_constant = int(input("Enter the constant term of the first plane equation (d): "))        # d1 in the plane equation a1x + b1y + c1z = d1
     plane2_normal = list(map(int, input("Enter the second plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the second plane
     plane2_constant = int(input("Enter the constant term of the second plane equation (d): "))       # d2 in the plane equation a2x + b2y + c2z = d2
 
     print(find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_constant))
+
+elif choice == 4:
+    l1a = list(map(int, input("Enter the position vector of line 1 (space-separated): ").split()))
+    l1b = list(map(int, input("Enter the direction vector of line 1 (space-separated): ").split()))
+    l2a = list(map(int, input("Enter the position vector of line 2 (space-separated): ").split()))
+    l2b = list(map(int, input("Enter the direction vector of line 2 (space-separated): ").split()))
+    print(f"Shortest distance: {shortest_distance_between_lines(l1a,l1b,l2a,l2b)}")
