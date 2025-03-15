@@ -79,8 +79,123 @@ def find_intersection(a1, b1, a2, b2):
     else:
         print("\nStep 4: No solution found for λ and μ, so the lines are skew (do not intersect).")
 
+
+from sympy import symbols, Eq, solve
+
+def find_intersection(plane_normal, plane_constant, line_point, line_direction):
+    """
+    Find the intersection between a line and a plane using vector equations.
+
+    Parameters:
+    - plane_normal: Normal vector of the plane [a, b, c].
+    - plane_constant: The constant d in the plane equation r · n = d.
+    - line_point: A point on the line [x1, y1, z1].
+    - line_direction: Direction vector of the line [u, v, w].
+
+    Returns:
+    - A string indicating the intersection point, no intersection, or if the line lies on the plane.
+    """
+    # Step 1: Unpack inputs
+    a, b, c = plane_normal
+    d = plane_constant
+    x1, y1, z1 = line_point
+    u, v, w = line_direction
+
+    print(f"Step 1: Inputs")
+    print(f"Plane normal vector: n = ({a}, {b}, {c})")
+    print(f"Plane constant: d = {d}")
+    print(f"Point on the line: a = ({x1}, {y1}, {z1})")
+    print(f"Line direction vector: b = ({u}, {v}, {w})")
+    print()
+
+    # Step 2: Define the parameter λ (lambda)
+    λ = symbols('λ')
+
+    # Step 3: Write the vector equation of the line
+    # r = a + λb
+    r = (x1 + u * λ, y1 + v * λ, z1 + w * λ)
+
+    print(f"Step 2: Vector equation of the line")
+    print(f"r = a + λb")
+    print(f"r = ({x1}, {y1}, {z1}) + λ({u}, {v}, {w})")
+    print(f"r = ({r[0]}, {r[1]}, {r[2]})")
+    print()
+
+    # Step 4: Substitute the line equation into the plane equation
+    # Plane equation: r · n = d
+    plane_eq = a * r[0] + b * r[1] + c * r[2] - d
+
+    print(f"Step 3: Substitute into the plane equation")
+    print(f"Plane equation: r · n = d")
+    print(f"({r[0]}, {r[1]}, {r[2]}) · ({a}, {b}, {c}) = {d}")
+    print(f"Expanded equation: {a}*({r[0]}) + {b}*({r[1]}) + {c}*({r[2]}) = {d}")
+    print(f"Simplified plane equation: {plane_eq} = 0")
+    print()
+
+    # Step 5: Solve for λ
+    print(f"Step 4: Solve for λ")
+    print(f"Solving the equation: {plane_eq} = 0")
+    λ_solution = solve(plane_eq, λ)
+    print(f"Solution for λ: {λ_solution}")
+    print()
+
+    # Step 6: Analyze the solution for λ
+    if not λ_solution:
+        print("Step 5: Analysis")
+        print("No solution for λ. The line does not intersect the plane.")
+        return "The line does not intersect the plane."
+    elif isinstance(λ_solution, list) and len(λ_solution) == 0:
+        print("Step 5: Analysis")
+        print("No solution for λ. The line does not intersect the plane.")
+        return "The line does not intersect the plane."
+    elif isinstance(λ_solution, dict) and not λ_solution:
+        print("Step 5: Analysis")
+        print("No solution for λ. The line does not intersect the plane.")
+        return "The line does not intersect the plane."
+    else:
+        # If λ_solution is a dictionary, extract the value
+        if isinstance(λ_solution, dict):
+            λ_value = λ_solution[λ]
+        else:
+            λ_value = λ_solution[0]
+
+        print(f"Step 5: Analysis")
+        print(f"Solution for λ: λ = {λ_value}")
+        print()
+
+        # Step 7: Substitute λ back into the line equation to find the intersection point
+        intersection_point = (r[0].subs(λ, λ_value), r[1].subs(λ, λ_value), r[2].subs(λ, λ_value))
+
+        print(f"Step 6: Find the intersection point")
+        print(f"Substitute λ = {λ_value} into the line equation:")
+        print(f"r = ({r[0].subs(λ, λ_value)}, {r[1].subs(λ, λ_value)}, {r[2].subs(λ, λ_value)})")
+        print(f"Intersection point: {intersection_point}")
+        print()
+
+        # Step 8: Check if the line lies on the plane
+        # If the plane equation is satisfied for all λ, the line lies on the plane
+        if plane_eq.subs(λ, λ_value + 1) == plane_eq.subs(λ, λ_value):
+            print("Step 7: Check if the line lies on the plane")
+            print("The plane equation is satisfied for all λ. The line lies on the plane.")
+            return "The line lies on the plane."
+        else:
+            print("Step 7: Check if the line lies on the plane")
+            print("The plane equation is not satisfied for all λ. The line intersects the plane at a single point.")
+            return f"The line intersects the plane at {intersection_point}"
+
+# Example usage:
+plane_normal = [1, 2, 3]  # Normal vector of the plane
+plane_constant = 6         # d in the plane equation r · n = d
+line_point = [1, 1, 1]     # A point on the line
+line_direction = [1, 1, 1] # Direction vector of the line
+
+
+
+
 # User input handling
-choice = int(input("Enter choice (1 to find intersection): "))
+print("Enter 1 to find the intersection of two lines: ")
+print("Enter 2 to find the intersection of a line and a plane: ")
+choice = int(input())
 
 if choice == 1:
     l1a = list(map(int, input("Enter the position vector of line 1 (space-separated): ").split()))
@@ -89,3 +204,10 @@ if choice == 1:
     l2b = list(map(int, input("Enter the direction vector of line 2 (space-separated): ").split()))
 
     find_intersection(l1a, l1b, l2a, l2b)
+if choice == 2:
+    line_point = list(map(int, input("Enter the position vector of the line (space-separated): ").split()))
+    line_direction = list(map(int, input("Enter the direction vector of the line (space-separated): ").split()))
+    plane_normal = list(map(int, input("Enter the plane coefficients (space-separated, as ax + by + cz = d): ").split()))
+    plane_constant = int(input("Enter the constant term of the plane equation (d): "))
+
+    print(find_intersection(plane_normal, plane_constant, line_point, line_direction))
