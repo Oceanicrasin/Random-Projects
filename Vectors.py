@@ -80,7 +80,7 @@ def find_intersection_LL(a1, b1, a2, b2):
         print("\nStep 4: No solution found for λ and μ, so the lines are skew (do not intersect).")
 
 
-from sympy import symbols, Eq, solve
+from sympy import symbols, Eq, solve,sqrt,Matrix
 
 def find_intersection_PL(plane_normal, plane_constant, line_point, line_direction):
     """
@@ -283,7 +283,6 @@ def find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_c
 
     return f"The intersection line is r = ({x1}, {y1}, {z1}) + λ({direction_vector[0]}, {direction_vector[1]}, {direction_vector[2]})"
 
-from sympy import symbols, Matrix, solve, sqrt
 
 def shortest_distance_between_lines(line1_point, line1_direction, line2_point, line2_direction):
     """
@@ -417,11 +416,181 @@ def shortest_distance_between_lines(line1_point, line1_direction, line2_point, l
         return distance
 
 
+def shortest_distance_line_point(line_point, line_direction, point):
+    """
+    Find the shortest distance between a line and a point using the described method.
+
+    Parameters:
+    - line_point: A point on the line [x0, y0, z0].
+    - line_direction: Direction vector of the line [u, v, w].
+    - point: The point [x_p, y_p, z_p].
+
+    Returns:
+    - The shortest distance between the line and the point.
+    """
+    # Step 1: Unpack inputs
+    a = Matrix(line_point)
+    d = Matrix(line_direction)
+    p = Matrix(point)
+
+    print(f"Step 1: Inputs")
+    print(f"Line: r = ({a[0]}, {a[1]}, {a[2]}) + λ({d[0]}, {d[1]}, {d[2]})")
+    print(f"Point: p = ({p[0]}, {p[1]}, {p[2]})")
+    print()
+
+    # Step 2: Represent a general point on the line
+    λ = symbols('λ')
+    r = a + λ * d
+    print(f"Step 2: General point on the line:")
+    print(f"r = ({r[0]}, {r[1]}, {r[2]})")
+    print()
+
+    # Step 3: Compute the vector (p - r)
+    p_minus_r = p - r
+    print(f"Step 3: Compute the vector (p - r):")
+    print(f"p - r = ({p[0]} - {r[0]}, {p[1]} - {r[1]}, {p[2]} - {r[2]}) = ({p_minus_r[0]}, {p_minus_r[1]}, {p_minus_r[2]})")
+    print()
+
+    # Step 4: Dot (p - r) with d and set it to zero
+    eq = p_minus_r.dot(d)
+    print(f"Step 4: Set (p - r) · d = 0:")
+    print(f"({p_minus_r[0]}){d[0]} + ({p_minus_r[1]}){d[1]} + ({p_minus_r[2]}){d[2]} = 0")
+    print(f"Simplify: {eq} = 0")
+    print()
+
+    # Step 5: Solve for λ
+    λ_value = solve(eq, λ)[0]
+    print(f"Step 5: Solve for λ: λ = {λ_value}")
+    print()
+
+    # Step 6: Substitute λ back into r to find the closest point
+    closest_point = r.subs(λ, λ_value)
+    print(f"Step 6: Substitute λ back into r to find the closest point:")
+    print(f"Closest point on the line: ({closest_point[0]}, {closest_point[1]}, {closest_point[2]})")
+    print()
+
+    # Step 7: Compute the distance between p and the closest point
+    distance_vector = p - closest_point
+    distance = distance_vector.norm()
+    print(f"Step 7: Compute the distance between p and the closest point:")
+    print(f"Distance = sqrt(({distance_vector[0]})^2 + ({distance_vector[1]})^2 + ({distance_vector[2]})^2) = {distance}")
+    print()
+
+    return distance
+
+
+def shortest_distance_point_plane(plane_coeffs, plane_constant, point):
+    """
+    Find the shortest distance between a point and a plane.
+
+    Parameters:
+    - plane_coeffs: Coefficients of the plane equation [a, b, c].
+    - plane_constant: The constant d in the plane equation ax + by + cz + d = 0.
+    - point: The point [x_p, y_p, z_p].
+
+    Returns:
+    - The shortest distance between the point and the plane.
+    """
+    # Step 1: Unpack inputs
+    a, b, c = plane_coeffs
+    d = plane_constant
+    x_p, y_p, z_p = point
+
+    print(f"Step 1: Inputs")
+    print(f"Plane equation: {a}x + {b}y + {c}z + {d} = 0")
+    print(f"Point: ({x_p}, {y_p}, {z_p})")
+    print()
+
+    # Step 2: Plug the point into the plane equation
+    numerator = abs(a * x_p + b * y_p + c * z_p + d)
+    print(f"Step 2: Plug the point into the plane equation:")
+    print(f"|{a}*{x_p} + {b}*{y_p} + {c}*{z_p} + {d}| = |{a*x_p + b*y_p + c*z_p + d}| = {numerator}")
+    print()
+
+    # Step 3: Compute the norm of the normal vector
+    denominator = sqrt(a**2 + b**2 + c**2)
+    print(f"Step 3: Compute the norm of the normal vector:")
+    print(f"sqrt({a}^2 + {b}^2 + {c}^2) = sqrt({a**2 + b**2 + c**2}) = {denominator}")
+    print()
+
+    # Step 4: Compute the shortest distance
+    distance = numerator / denominator
+    print(f"Step 4: Compute the shortest distance:")
+    print(f"Distance = |{a}*{x_p} + {b}*{y_p} + {c}*{z_p} + {d}| / sqrt({a}^2 + {b}^2 + {c}^2) = {numerator} / {denominator} = {distance}")
+    print()
+
+    return distance
+
+
+def shortest_distance_parallel_planes(plane1_coeffs, plane1_constant, plane2_coeffs, plane2_constant):
+    """
+    Find the shortest distance between two parallel planes.
+
+    Parameters:
+    - plane1_coeffs: Coefficients of the first plane equation [a1, b1, c1].
+    - plane1_constant: The constant d1 in the first plane equation a1x + b1y + c1z + d1 = 0.
+    - plane2_coeffs: Coefficients of the second plane equation [a2, b2, c2].
+    - plane2_constant: The constant d2 in the second plane equation a2x + b2y + c2z + d2 = 0.
+
+    Returns:
+    - The shortest distance between the two parallel planes.
+    """
+    # Step 1: Unpack inputs
+    a1, b1, c1 = plane1_coeffs
+    d1 = plane1_constant
+    a2, b2, c2 = plane2_coeffs
+    d2 = plane2_constant
+
+    print(f"Step 1: Inputs")
+    print(f"Plane 1: {a1}x + {b1}y + {c1}z + {d1} = 0")
+    print(f"Plane 2: {a2}x + {b2}y + {c2}z + {d2} = 0")
+    print()
+
+    # Step 2: Check if the planes are parallel
+    if (a1 / a2) != (b1 / b2) or (b1 / b2) != (c1 / c2):
+        print("The planes are not parallel. Cannot compute the shortest distance.")
+        return None
+
+    print("Step 2: The planes are parallel.")
+    print()
+
+    # Step 3: Find a point on Plane 1
+    # Let x = 0 and y = 0, then solve for z
+    if c1 != 0:
+        z = (-d1) / c1
+        point_on_plane1 = [0, 0, z]
+    elif b1 != 0:
+        y = (-d1) / b1
+        point_on_plane1 = [0, y, 0]
+    elif a1 != 0:
+        x = (-d1) / a1
+        point_on_plane1 = [x, 0, 0]
+    else:
+        print("Invalid plane equation.")
+        return None
+
+    print(f"Step 3: Find a point on Plane 1:")
+    print("Let x and y be 0 then solve for z. Or in another order if coefficient of z is 0")
+    print(f"Point on Plane 1: ({point_on_plane1[0]}, {point_on_plane1[1]}, {point_on_plane1[2]})")
+    print()
+
+    # Step 4: Compute the distance between the point and Plane 2
+    distance = shortest_distance_point_plane(plane2_coeffs, plane2_constant, point_on_plane1)
+    print(f"Step 4: Compute the distance between the point and Plane 2:")
+    print(f"Distance = {distance}")
+    print()
+
+    return distance
+
+
 # User input handling
 print("Enter 1 to find the intersection of two lines: ")
 print("Enter 2 to find the intersection of a line and a plane: ")
 print("Enter 3 to find the intersection of two planes: ")
 print("Enter 4 to find the shortest distance between two lines: ")
+print("Enter 5 to find the shortest distance between a line and a plane: ")
+print("Enter 6 to find the shortest distance between a plane and a point")
+print("Enter 7 to find the shortest distance between two parallel planes")
 choice = int(input())
 
 if choice == 1:
@@ -452,3 +621,24 @@ elif choice == 4:
     l2a = list(map(int, input("Enter the position vector of line 2 (space-separated): ").split()))
     l2b = list(map(int, input("Enter the direction vector of line 2 (space-separated): ").split()))
     print(f"Shortest distance: {shortest_distance_between_lines(l1a,l1b,l2a,l2b)}")
+
+elif choice == 5:
+    l1a = list(map(int, input("Enter the position vector of line 1 (space-separated): ").split()))
+    l1b = list(map(int, input("Enter the direction vector of line 1 (space-separated): ").split()))
+    p = list(map(int, input("Enter the vector of the point (space-separated): ").split()))
+    print(f"Shortest distance: {shortest_distance_line_point(l1a, l1b, p)}")
+
+elif choice == 6:
+    plane1_normal = list(map(int, input("Enter the first plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the first plane
+    plane1_constant = int(input("Enter the constant term of the first plane equation (d): "))*-1        # d1 in the plane equation a1x + b1y + c1z = d1
+    p = list(map(int, input("Enter the vector of the point (space-separated): ").split()))
+    print(f"Shortest distance: {shortest_distance_point_plane(plane1_normal, plane1_constant, p)}")
+
+elif choice == 7:   
+    plane1_normal = list(map(int, input("Enter the first plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the first plane
+    plane1_constant = int(input("Enter the constant term of the first plane equation (d): "))*-1        # d1 in the plane equation a1x + b1y + c1z = d1
+    plane2_normal = list(map(int, input("Enter the second plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the second plane
+    plane2_constant = int(input("Enter the constant term of the second plane equation (d): "))*-1       # d2 in the plane equation a2x + b2y + c2z = d2 
+    print(f"Shortest distance: {shortest_distance_parallel_planes(plane1_normal, plane1_constant, plane2_normal, plane2_constant)}")
+
+    
