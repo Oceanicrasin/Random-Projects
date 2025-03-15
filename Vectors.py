@@ -20,13 +20,19 @@ def find_intersection(a1, b1, a2, b2):
     print(f"Line 2: x = {a2[0]} + {b2[0]}μ,  y = {a2[1]} + {b2[1]}μ,  z = {a2[2]} + {b2[2]}μ\n")
 
     # Step 2: Check if direction vectors are proportional (parallel test)
+    print("Step 2: Checking if the direction vectors are proportional")
+
     ratios = []
     for i in range(3):
         if b2[i] != 0:  # Avoid division by zero
             ratios.append(b1[i] / b2[i])
+        else:
+            ratios.append(None)  # To handle division by zero properly
 
-    if all(ratio == ratios[0] for ratio in ratios):  # If all ratios are equal, lines are parallel
-        print("Step 2: The direction vectors are proportional, so the lines are parallel.")
+    print(f"Direction vector ratios: {ratios}")
+
+    if all(ratio == ratios[0] for ratio in ratios if ratio is not None):  # If all non-None ratios are equal, lines are parallel
+        print("Conclusion: The direction vectors are proportional, so the lines are parallel.")
 
         # Check if they are the same line (coincident)
         eq1 = sym.Eq(a1[0] + λ * b1[0], a2[0] + μ * b2[0])
@@ -40,9 +46,11 @@ def find_intersection(a1, b1, a2, b2):
         else:
             print("Step 3: The starting points do not align, so the lines are parallel but distinct.")
         return
+    else:
+        print("Conclusion: The direction vectors are not proportional, so the lines are NOT parallel. Proceeding to check for intersection.\n")
 
     # Step 3: Set up and solve x and y equations
-    print("Step 2: Solve for λ and μ using x and y components:")
+    print("Step 3: Solve for λ and μ using x and y components:")
     eq1 = sym.Eq(r1[0], r2[0])  # x-equation
     eq2 = sym.Eq(r1[1], r2[1])  # y-equation
 
@@ -53,23 +61,23 @@ def find_intersection(a1, b1, a2, b2):
 
     if solution:
         λ_value, μ_value = solution[λ], solution[μ]
-        print(f"\nStep 3: Solving for λ and μ gives: λ = {λ_value}, μ = {μ_value}\n")
+        print(f"\nStep 4: Solving for λ and μ gives: λ = {λ_value}, μ = {μ_value}\n")
 
-        # Step 4: Check z-component
+        # Step 5: Check z-component
         z1 = a1[2] + b1[2] * λ_value
         z2 = a2[2] + b2[2] * μ_value
 
-        print("Step 4: Check if the z-components satisfy the same value")
+        print("Step 5: Check if the z-components satisfy the same value")
         print(f"z1 = {a1[2]} + {b1[2]}({λ_value}) = {z1}")
         print(f"z2 = {a2[2]} + {b2[2]}({μ_value}) = {z2}")
 
         if z1 == z2:
             intersection = [r1[i].subs(λ, λ_value) for i in range(3)]
-            print(f"\nStep 5: The z-equation holds, so the lines intersect at ({intersection[0]}, {intersection[1]}, {intersection[2]})")
+            print(f"\nStep 6: The z-equation holds, so the lines intersect at ({intersection[0]}, {intersection[1]}, {intersection[2]})")
         else:
-            print("\nStep 5: The z-components do not match, so the lines are skew (do not intersect in 3D).")
+            print("\nStep 6: The z-components do not match, so the lines are skew (do not intersect in 3D).")
     else:
-        print("\nStep 3: No solution found for λ and μ, so the lines are skew (do not intersect).")
+        print("\nStep 4: No solution found for λ and μ, so the lines are skew (do not intersect).")
 
 # User input handling
 choice = int(input("Enter choice (1 to find intersection): "))
