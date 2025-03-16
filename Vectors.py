@@ -183,12 +183,6 @@ def find_intersection_PL(plane_normal, plane_constant, line_point, line_directio
             print("The plane equation is not satisfied for all λ. The line intersects the plane at a single point.")
             return f"The line intersects the plane at {intersection_point}"
 
-# Example usage:
-plane_normal = [1, 2, 3]  # Normal vector of the plane
-plane_constant = 6         # d in the plane equation r · n = d
-line_point = [1, 1, 1]     # A point on the line
-line_direction = [1, 1, 1] # Direction vector of the line
-
 
 def find_intersection_PP(plane1_normal, plane1_constant, plane2_normal, plane2_constant):
     """
@@ -573,6 +567,8 @@ def shortest_distance_parallel_planes(plane1_coeffs, plane1_constant, plane2_coe
     print("Let x and y be 0 then solve for z. Or in another order if coefficient of z is 0")
     print(f"Point on Plane 1: ({point_on_plane1[0]}, {point_on_plane1[1]}, {point_on_plane1[2]})")
     print()
+    print("Now we can sub this into the shortest distance between a plane a line function")
+    print()
 
     # Step 4: Compute the distance between the point and Plane 2
     distance = shortest_distance_point_plane(plane2_coeffs, plane2_constant, point_on_plane1)
@@ -582,6 +578,70 @@ def shortest_distance_parallel_planes(plane1_coeffs, plane1_constant, plane2_coe
 
     return distance
 
+import sympy as sp
+
+def reflect_point_in_plane(plane_coeffs, plane_constant, p):
+    """
+    Reflects a point in a plane and prints a step-by-step guide.
+
+    Parameters:
+    plane_coeffs (list): Coefficients of the plane equation [A, B, C] (r.n = d).
+    plane_constant (int): Constant term d in the plane equation (r.n = d).
+    p (list): Coordinates of the point to reflect [x, y, z].
+
+    Returns:
+    list: The reflected point as [x, y, z], in fraction form if applicable.
+    """
+    # Define symbolic variables
+    λ = sp.symbols('λ')  # Define λ as a symbolic variable
+
+    # Step 1: Define the point and the plane
+    print("Step 1: Define the point and the plane.")
+    A, B, C = plane_coeffs
+    d = plane_constant
+    x0, y0, z0 = p
+
+    print(f"Point to reflect: P = ({x0}, {y0}, {z0})")
+    print(f"Plane equation: r · n = d, where n = ({A}, {B}, {C}) and d = {d}")
+
+    # Step 2: Define the line passing through the point and perpendicular to the plane
+    print("\nStep 2: Define the line passing through the point and perpendicular to the plane.")
+    print("The direction vector of the line is the normal vector of the plane, n = (A, B, C).")
+    print(f"Line equation in vector form: r = P + λn = ({x0}, {y0}, {z0}) + λ({A}, {B}, {C})")
+
+    # General point of the line
+    general_point = (x0 + λ * A, y0 + λ * B, z0 + λ * C)
+    print(f"General point of the line: r = ({general_point[0]}, {general_point[1]}, {general_point[2]})")
+
+    # Step 3: Substitute the line equation into the plane equation and solve for λ
+    print("\nStep 3: Substitute the line equation into the plane equation and solve for λ.")
+    # Dot product P · n
+    P_dot_n = A * x0 + B * y0 + C * z0
+    # Dot product n · n
+    n_dot_n = A**2 + B**2 + C**2
+    # Solve for λ
+    λ_value = sp.Rational(d - P_dot_n, n_dot_n)  # Use Rational to keep as a fraction
+    print(f"Substitute into plane equation: ({A})({x0}) + ({B})({y0}) + ({C})({z0}) + λ({A}^2 + {B}^2 + {C}^2) = {d}")
+    print(f"Simplify: {P_dot_n} + λ({n_dot_n}) = {d}")
+    print(f"Solve for λ: λ = ({d} - {P_dot_n}) / {n_dot_n} = {λ_value}")
+
+    # Step 4: Double the value of λ to find the reflected point
+    print("\nStep 4: Double the value of λ to find the reflected point.")
+    print("The reflected point is obtained by traveling twice the distance along the line.")
+    reflected_point = (
+        x0 + 2 * λ_value * A,
+        y0 + 2 * λ_value * B,
+        z0 + 2 * λ_value * C
+    )
+    print(f"Substitute 2λ = {2 * λ_value} into the general point of the line:")
+    print(f"Reflected point = ({x0} + {2 * λ_value}*{A}, {y0} + {2 * λ_value}*{B}, {z0} + {2 * λ_value}*{C})")
+    print(f"Reflected point coordinates: ({reflected_point[0]}, {reflected_point[1]}, {reflected_point[2]})")
+
+    # Step 5: Output the final result
+    print("\nStep 5: Final result.")
+    print(f"The reflection of the point ({x0}, {y0}, {z0}) in the plane r · n = {d} is ({reflected_point[0]}, {reflected_point[1]}, {reflected_point[2]})")
+
+    return reflected_point
 
 # User input handling
 print("Enter 1 to find the intersection of two lines: ")
@@ -591,6 +651,7 @@ print("Enter 4 to find the shortest distance between two lines: ")
 print("Enter 5 to find the shortest distance between a line and a plane: ")
 print("Enter 6 to find the shortest distance between a plane and a point")
 print("Enter 7 to find the shortest distance between two parallel planes")
+print("Enter 8 to reflect a point in a plane: ")
 choice = int(input())
 
 if choice == 1:
@@ -641,4 +702,10 @@ elif choice == 7:
     plane2_constant = int(input("Enter the constant term of the second plane equation (d): "))*-1       # d2 in the plane equation a2x + b2y + c2z = d2 
     print(f"Shortest distance: {shortest_distance_parallel_planes(plane1_normal, plane1_constant, plane2_normal, plane2_constant)}")
 
+elif choice == 8:
+    plane_coeffs = list(map(int, input("Enter the first plane coefficients (space-separated, as ax + by + cz = d): ").split())) # Normal vector of the first plane
+    plane_constant = int(input("Enter the constant term of the first plane equation (d): "))      # d1 in the plane equation a1x + b1y + c1z = d1
+    p = list(map(int, input("Enter the vector of the point (space-separated): ").split()))
+    
+    print("Reflected point:", reflect_point_in_plane(plane_coeffs, plane_constant, p))
     
